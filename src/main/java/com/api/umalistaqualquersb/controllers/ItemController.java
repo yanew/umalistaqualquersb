@@ -44,6 +44,15 @@ public class ItemController {
 	    public ResponseEntity<Page<Item>> getAllItens(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
 	        return ResponseEntity.status(HttpStatus.OK).body(itemService.findAll(pageable));
 	    }
+	    
+	    @GetMapping("/{id}")
+	    public ResponseEntity<Object> getOneParkingSpot(@PathVariable(value = "id") UUID id){
+	        Optional<Item> itemOptional = itemService.findById(id);
+	        if (!itemOptional.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item não encontrado.");
+	        }
+	        return ResponseEntity.status(HttpStatus.OK).body(itemOptional.get());
+	    }
 		
 	    @PostMapping
 	    public ResponseEntity<Object> saveItem(@RequestBody @Valid ItemDto itemDto){

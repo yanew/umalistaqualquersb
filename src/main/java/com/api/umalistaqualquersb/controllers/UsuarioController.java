@@ -40,8 +40,17 @@ public class UsuarioController {
 	    }
 		
 	    @GetMapping
-	    public ResponseEntity<Page<Usuario>> getAllItens(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+	    public ResponseEntity<Page<Usuario>> getAllUsuarios(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
 	        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findAll(pageable));
+	    }
+	    
+	    @GetMapping("/{id}")
+	    public ResponseEntity<Object> getUsuario(@PathVariable(value = "id") UUID id){
+	        Optional<Usuario> usuarioOptional = usuarioService.findById(id);
+	        if (!usuarioOptional.isPresent()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
+	        }
+	        return ResponseEntity.status(HttpStatus.OK).body(usuarioOptional.get());
 	    }
 	    
 	    @PostMapping

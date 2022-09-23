@@ -9,8 +9,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+ 
 @Entity
 @Table(name="item")
 public class Item implements Serializable{
@@ -26,6 +30,11 @@ public class Item implements Serializable{
 	
 	@Column(nullable = false)
     private LocalDateTime dataRegistro;
+	
+	@ManyToOne
+	@JoinColumn(name = "id_usuario", referencedColumnName = "id")
+	@JsonBackReference
+	private Usuario usuario;
 	
 	public UUID getId() {
 		return id;
@@ -49,6 +58,14 @@ public class Item implements Serializable{
 	
 	public void setDataRegistro(LocalDateTime dataRegistro) {
 		this.dataRegistro = dataRegistro;
+	}
+	
+	public Usuario getUsuario() {
+		return usuario;
+	}
+	
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
 	}
 	
 }

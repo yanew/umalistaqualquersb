@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.umalistaqualquersb.dtos.UsuarioDto;
+import com.api.umalistaqualquersb.models.Item;
 import com.api.umalistaqualquersb.models.Usuario;
 import com.api.umalistaqualquersb.services.UsuarioService;
 
@@ -58,6 +59,7 @@ public class UsuarioController {
 	        var usuario = new Usuario();
 	        BeanUtils.copyProperties(usuarioDto, usuario);
 	        usuario.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
+	        
 	        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.save(usuario));
 	    }
 	    
@@ -81,7 +83,19 @@ public class UsuarioController {
 	        var usuario = new Usuario();
 	        BeanUtils.copyProperties(usuarioDto, usuario);
 	        usuario.setId(usuarioOptional.get().getId());
-	        usuario.setDataRegistro(usuarioOptional.get().getDataRegistro());
+	        usuario.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
+	        usuario.setListaItens(usuarioDto.getListaItens());
+	        
+	        for (Item item : usuario.getListaItens()) {
+	        	if(item.getUsuario()==null) {
+	    	        item.setUsuario(usuarioOptional.get());
+	        	}
+	        	
+	        	if(item.getDataRegistro()==null) {
+	        		item.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));	
+	        	}
+			}
+	        
 	        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.save(usuario));
 	    }
 	

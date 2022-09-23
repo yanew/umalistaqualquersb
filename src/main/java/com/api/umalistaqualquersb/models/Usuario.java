@@ -12,10 +12,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name="usuario")
@@ -39,11 +39,8 @@ public class Usuario implements Serializable{
 	@Column(nullable = false)
     private LocalDateTime dataRegistro;
 	
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(
-			name = "usuario_item", 
-			joinColumns = @JoinColumn(name = "id_usuario"),
-			inverseJoinColumns = @JoinColumn(name = "id_item"))
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "usuario")
+	@JsonManagedReference
 	private List<Item> listaItens = new ArrayList<Item>();
 
 	public UUID getId() {

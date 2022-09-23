@@ -28,6 +28,7 @@ import com.api.umalistaqualquersb.dtos.ItemDto;
 import com.api.umalistaqualquersb.models.Item;
 import com.api.umalistaqualquersb.models.Usuario;
 import com.api.umalistaqualquersb.services.ItemService;
+import com.api.umalistaqualquersb.services.UsuarioService;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -35,9 +36,11 @@ import com.api.umalistaqualquersb.services.ItemService;
 public class ItemController {
 
 	 final ItemService itemService;
+	 final UsuarioService usuarioService;
 
-	    public ItemController(ItemService itemService) {
+	    public ItemController(ItemService itemService, UsuarioService usuarioService) {
 	        this.itemService = itemService;
+	        this.usuarioService = usuarioService;
 	    }
 	    
 	    @GetMapping
@@ -59,6 +62,7 @@ public class ItemController {
 	        var item = new Item();
 	        BeanUtils.copyProperties(itemDto, item);
 	        item.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
+	        
 	        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.save(item));
 	    }
 	    
@@ -83,7 +87,17 @@ public class ItemController {
 	        BeanUtils.copyProperties(itemDto, item);
 	        item.setId(itemOptional.get().getId());
 	        item.setDataRegistro(itemOptional.get().getDataRegistro());
-	        return ResponseEntity.status(HttpStatus.OK).body(itemService.save(item));
+	        
+	        Optional<Usuario> usuarioOptional = usuarioService.findById(UUID.fromString(itemDto.getIdUsuario()));
+	        item.setUsuario(usuarioOptional.get());
+	        
+	        Item novoItem = itemService.save(item);
+	        ItemDto novoItemDto = new ItemDto();
+	        novoItemDto.setConteudo(novoItem.getConteudo());
+	        novoItemDto.setIdUsuario(novoItem.getUsuario().getId().toString());
+	        novoItemDto.setId(novoItem.getId().toString());
+	        
+	        return ResponseEntity.status(HttpStatus.OK).body(novoItemDto);
 	    }
 	    
 	    

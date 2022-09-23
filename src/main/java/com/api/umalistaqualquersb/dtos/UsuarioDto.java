@@ -1,7 +1,12 @@
 package com.api.umalistaqualquersb.dtos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+
+import com.api.umalistaqualquersb.models.Item;
 
 public class UsuarioDto {
 
@@ -16,6 +21,12 @@ public class UsuarioDto {
 	@NotBlank
 	@Size(max = 8)
     private String senha;
+	
+	private List<Item> listaItens;
+	
+	public UsuarioDto() {
+		this.listaItens = new ArrayList<>();
+	}
 
 	public String getNome() {
 		return nome;
@@ -39,6 +50,14 @@ public class UsuarioDto {
 
 	public void setSenha(String senha) {
 		this.senha = senha;
+	}
+	
+	public List<Item> getListaItens() {
+		return listaItens;
+	}
+	
+	public void setListaItens(List<Item> listaItens) {
+		this.listaItens = listaItens;
 	}
 	
 }

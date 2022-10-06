@@ -10,4 +10,8 @@ import com.api.umalistaqualquersb.models.Usuario;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
+	
+	boolean existsByLoginAndSenha(String login, String senha);
+	
+	
 }

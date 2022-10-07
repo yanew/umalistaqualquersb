@@ -1,5 +1,6 @@
 package com.api.umalistaqualquersb.repositories;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +12,7 @@ import com.api.umalistaqualquersb.models.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
 	
-	boolean existsByLoginAndSenha(String login, String senha);
+	Optional<Usuario> findByLoginAndSenha(String login, String senha);
 	
 	
 }

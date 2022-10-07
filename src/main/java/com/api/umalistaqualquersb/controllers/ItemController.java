@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.umalistaqualquersb.dtos.ItemDto;
 import com.api.umalistaqualquersb.models.Item;
-import com.api.umalistaqualquersb.models.Usuario;
 import com.api.umalistaqualquersb.services.ItemService;
 import com.api.umalistaqualquersb.services.UsuarioService;
 
@@ -85,11 +84,9 @@ public class ItemController {
 	        }
 	        var item = new Item();
 	        BeanUtils.copyProperties(itemDto, item);
+	        item.setUsuario(itemOptional.get().getUsuario());
 	        item.setId(itemOptional.get().getId());
 	        item.setDataRegistro(itemOptional.get().getDataRegistro());
-	        
-	        Optional<Usuario> usuarioOptional = usuarioService.findById(UUID.fromString(itemDto.getIdUsuario()));
-	        item.setUsuario(usuarioOptional.get());
 	        
 	        Item novoItem = itemService.save(item);
 	        ItemDto novoItemDto = new ItemDto();

@@ -33,6 +33,10 @@ public class UsuarioService {
 	    public Optional<Usuario> findById(UUID id) {
 	        return usuarioRepository.findById(id);
 	    }
+	    
+	    public Optional<Usuario> findByLoginAndSenha(String login, String senha) {
+	    	return usuarioRepository.findByLoginAndSenha(login, senha);
+	    }
 
 	    @Transactional
 	    public void delete(Usuario usuario) {

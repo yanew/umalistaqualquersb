@@ -10,6 +10,8 @@ import com.api.umalistaqualquersb.models.Item;
 
 public class UsuarioDto {
 
+	private String id;
+	
 	@NotBlank
 	@Size(max = 100)
     private String nome;
@@ -28,6 +30,14 @@ public class UsuarioDto {
 		this.listaItens = new ArrayList<>();
 	}
 
+	public String getId() {
+		return id;
+	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
 	public String getNome() {
 		return nome;
 	}

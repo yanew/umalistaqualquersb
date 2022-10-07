@@ -98,5 +98,15 @@ public class UsuarioController {
 	        
 	        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.save(usuario));
 	    }
+	    
+	    @GetMapping("/{login}/{senha}")
+	    public ResponseEntity<Object> findByLoginAndSenha(@PathVariable String login, @PathVariable String senha) {
+	    	Optional<Usuario> usuario = usuarioService.findByLoginAndSenha(login, senha);
+	    	if (!usuario.isPresent()) {
+	    		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado. Login ou senha incorreto.");
+	    	}
+	    	
+	    	return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findByLoginAndSenha(login, senha));
+	    }
 	
 }

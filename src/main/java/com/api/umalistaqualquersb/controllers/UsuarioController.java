@@ -2,6 +2,8 @@ package com.api.umalistaqualquersb.controllers;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.umalistaqualquersb.dtos.ItemDto;
 import com.api.umalistaqualquersb.dtos.UsuarioDto;
 import com.api.umalistaqualquersb.models.Item;
 import com.api.umalistaqualquersb.models.Usuario;
@@ -42,7 +45,7 @@ public class UsuarioController {
 		
 	    @GetMapping
 	    public ResponseEntity<Page<Usuario>> getAllUsuarios(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
-	        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findAll(pageable));
+	    	return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findAll(pageable));
 	    }
 	    
 	    @GetMapping("/{id}")
@@ -51,7 +54,15 @@ public class UsuarioController {
 	        if (!usuarioOptional.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
 	        }
-	        return ResponseEntity.status(HttpStatus.OK).body(usuarioOptional.get());
+	        
+	        UsuarioDto usuarioDto = new UsuarioDto();
+	        usuarioDto.setId(usuarioOptional.get().toString());
+	        usuarioDto.setLogin(usuarioOptional.get().getLogin());
+	        usuarioDto.setSenha(usuarioOptional.get().getSenha());
+	        usuarioDto.setNome(usuarioOptional.get().getNome());
+	        usuarioDto.setListaItensDto(this.parseListaItemParaItemDto(usuarioOptional.get().getListaItens()));
+	        
+	        return ResponseEntity.status(HttpStatus.OK).body(usuarioDto);
 	    }
 	    
 	    @PostMapping
@@ -84,7 +95,7 @@ public class UsuarioController {
 	        BeanUtils.copyProperties(usuarioDto, usuario);
 	        usuario.setId(usuarioOptional.get().getId());
 	        usuario.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
-	        usuario.setListaItens(usuarioDto.getListaItens());
+	        usuario.setListaItens(this.parseListasItemDtoParaItem(usuarioDto.getListaItensDto()));
 	        
 	        for (Item item : usuario.getListaItens()) {
 	        	if(item.getUsuario()==null) {
@@ -106,7 +117,45 @@ public class UsuarioController {
 	    		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado. Login ou senha incorreto.");
 	    	}
 	    	
-	    	return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findByLoginAndSenha(login, senha));
+	    	UsuarioDto usuarioDto = new UsuarioDto();
+	    	usuarioDto.setId(usuario.get().getId().toString());
+	    	usuarioDto.setLogin(usuario.get().getLogin());
+	    	usuarioDto.setSenha(usuario.get().getSenha());
+	    	usuarioDto.setNome(usuario.get().getNome());
+	    	usuarioDto.setListaItensDto(this.parseListaItemParaItemDto(usuario.get().getListaItens()));
+	    	
+	    	return ResponseEntity.status(HttpStatus.OK).body(usuarioDto);
+	    }
+	    
+	    private List<Item> parseListasItemDtoParaItem(List<ItemDto> listaItemDto){
+	    	List<Item> listaItem = new ArrayList<>();
+	    	
+	    	for (ItemDto itemDto : listaItemDto) {
+	    		Item item = new Item();
+	    		item.setId(UUID.fromString(itemDto.getId()));
+	    		item.setConteudo(itemDto.getConteudo());
+	    		item.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
+	    		
+	    		listaItem.add(item);
+			}
+	    
+	    	return listaItem;
+	    }
+	    
+	    private List<ItemDto> parseListaItemParaItemDto(List<Item> listaItens){
+	    	List<ItemDto> listaItemDto = new ArrayList<>();
+	    	
+	    	for (Item item : listaItens) {
+				ItemDto itemDto = new ItemDto();
+		
+				itemDto.setId(item.getId().toString());
+				item.setConteudo(item.getConteudo());
+				itemDto.setIdUsuario(item.getUsuario().getId().toString());
+	    
+				listaItemDto.add(itemDto);
+			}
+	    	
+	    	return listaItemDto;
 	    }
 	
 }

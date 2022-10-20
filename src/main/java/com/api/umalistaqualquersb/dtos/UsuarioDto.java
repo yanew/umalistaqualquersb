@@ -6,8 +6,6 @@ import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-import com.api.umalistaqualquersb.models.Item;
-
 public class UsuarioDto {
 
 	private String id;
@@ -24,10 +22,10 @@ public class UsuarioDto {
 	@Size(max = 8)
     private String senha;
 	
-	private List<Item> listaItens;
+	private List<ItemDto> listaItensDto;
 	
 	public UsuarioDto() {
-		this.listaItens = new ArrayList<>();
+		this.listaItensDto = new ArrayList<>();
 	}
 
 	public String getId() {
@@ -62,12 +60,12 @@ public class UsuarioDto {
 		this.senha = senha;
 	}
 	
-	public List<Item> getListaItens() {
-		return listaItens;
+	public List<ItemDto> getListaItensDto() {
+		return listaItensDto;
 	}
 	
-	public void setListaItens(List<Item> listaItens) {
-		this.listaItens = listaItens;
+	public void setListaItensDto(List<ItemDto> listaItensDto) {
+		this.listaItensDto = listaItensDto;
 	}
 	
 }

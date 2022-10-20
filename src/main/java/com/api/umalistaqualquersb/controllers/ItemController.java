@@ -48,12 +48,18 @@ public class ItemController {
 	    }
 	    
 	    @GetMapping("/{id}")
-	    public ResponseEntity<Object> getOneParkingSpot(@PathVariable(value = "id") UUID id){
+	    public ResponseEntity<Object> getItem(@PathVariable(value = "id") UUID id){
 	        Optional<Item> itemOptional = itemService.findById(id);
 	        if (!itemOptional.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item não encontrado.");
 	        }
-	        return ResponseEntity.status(HttpStatus.OK).body(itemOptional.get());
+	        
+	        ItemDto itemDto = new ItemDto();
+	        itemDto.setId(itemOptional.get().getId().toString());
+	        itemDto.setConteudo(itemOptional.get().getConteudo());
+	        itemDto.setIdUsuario(itemOptional.get().getUsuario().getId().toString());
+	        
+	        return ResponseEntity.status(HttpStatus.OK).body(itemDto);
 	    }
 		
 	    @PostMapping

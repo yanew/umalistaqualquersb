@@ -149,7 +149,7 @@ public class UsuarioController {
 				ItemDto itemDto = new ItemDto();
 		
 				itemDto.setId(item.getId().toString());
-				item.setConteudo(item.getConteudo());
+				itemDto.setConteudo(item.getConteudo());
 				itemDto.setIdUsuario(item.getUsuario().getId().toString());
 	    
 				listaItemDto.add(itemDto);

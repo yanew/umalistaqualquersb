@@ -2,6 +2,8 @@ package com.api.umalistaqualquersb.controllers;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,6 +11,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -43,13 +46,32 @@ public class ItemController {
 	    }
 	    
 	    @GetMapping
-	    public ResponseEntity<Page<Item>> getAllItens(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
-	        return ResponseEntity.status(HttpStatus.OK).body(itemService.findAll(pageable));
+	    public ResponseEntity<Page<ItemDto>> getAllItens(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+	        
+	    	Page<Item> pageItem = itemService.findAll(pageable);
+	    	
+	    	List<Item> listaItem = pageItem.toList();
+	    	
+	    	List<ItemDto> listaItemDto = new ArrayList<>();
+	    	for (Item item : listaItem) {
+				ItemDto itemDto = new ItemDto();
+				itemDto.setId(item.getId().toString());
+				itemDto.setConteudo(item.getConteudo());
+				itemDto.setIdUsuario(item.getUsuario().getId().toString());
+				
+				listaItemDto.add(itemDto);
+			}
+	    	
+	    	final int start = (int)pageable.getOffset();
+	    	final int end = Math.min((start + pageable.getPageSize()), listaItemDto.size());
+	    	final Page<ItemDto> pageItemDto = new PageImpl<>(listaItemDto.subList(start, end), pageable, listaItemDto.size());
+	    	
+	    	return ResponseEntity.status(HttpStatus.OK).body(pageItemDto);
 	    }
 	    
 	    @GetMapping("/{id}")
-	    public ResponseEntity<Object> getItem(@PathVariable(value = "id") UUID id){
-	        Optional<Item> itemOptional = itemService.findById(id);
+	    public ResponseEntity<Object> getItem(@PathVariable(value = "id") String id){
+	        Optional<Item> itemOptional = itemService.findById(UUID.fromString(id));
 	        if (!itemOptional.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item não encontrado.");
 	        }
@@ -68,12 +90,19 @@ public class ItemController {
 	        BeanUtils.copyProperties(itemDto, item);
 	        item.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
 	        
-	        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.save(item));
+	        Item itemSave = itemService.save(item);
+	        
+	        ItemDto itemDtoRetorno = new ItemDto();
+	        itemDtoRetorno.setId(itemSave.getId().toString());
+	        itemDtoRetorno.setConteudo(itemSave.getConteudo());
+	        itemDtoRetorno.setIdUsuario(itemSave.getUsuario().getId().toString());
+	        
+	        return ResponseEntity.status(HttpStatus.CREATED).body(itemDtoRetorno);
 	    }
 	    
 	    @DeleteMapping("/{id}")
-	    public ResponseEntity<Object> deleteItem(@PathVariable(value = "id") UUID id){
-	        Optional<Item> itemOptional = itemService.findById(id);
+	    public ResponseEntity<Object> deleteItem(@PathVariable(value = "id") String id){
+	        Optional<Item> itemOptional = itemService.findById(UUID.fromString(id));
 	        if (!itemOptional.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item não encontrado.");
 	        }
@@ -82,9 +111,9 @@ public class ItemController {
 	    }
 	    
 	    @PutMapping("/{id}")
-	    public ResponseEntity<Object> updateItem(@PathVariable(value = "id") UUID id,
+	    public ResponseEntity<Object> updateItem(@PathVariable(value = "id") String id,
 	                                                    @RequestBody @Valid ItemDto itemDto){
-	        Optional<Item> itemOptional = itemService.findById(id);
+	        Optional<Item> itemOptional = itemService.findById(UUID.fromString(id));
 	        if (!itemOptional.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item não encontrado.");
 	        }

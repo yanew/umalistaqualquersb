@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -44,13 +45,33 @@ public class UsuarioController {
 	    }
 		
 	    @GetMapping
-	    public ResponseEntity<Page<Usuario>> getAllUsuarios(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
-	    	return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findAll(pageable));
+	    public ResponseEntity<Page<UsuarioDto>> getAllUsuarios(@PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
+	    	
+	    	Page<Usuario> pageUsuario = usuarioService.findAll(pageable);
+	    	
+	    	List<Usuario> lista = pageUsuario.toList();
+	    	
+	    	List<UsuarioDto> listaUsuarioDto = new ArrayList<>();
+	    	for (Usuario usuario : lista) {
+				UsuarioDto usuarioDto = new UsuarioDto();
+				usuarioDto.setId(usuario.getId().toString());
+				usuarioDto.setLogin(usuario.getLogin());
+				usuarioDto.setNome(usuario.getNome());
+				usuarioDto.setListaItensDto(this.parseListaItemParaItemDto(usuario.getListaItens()));
+				
+				listaUsuarioDto.add(usuarioDto);
+			}
+	    	
+	    	final int start = (int)pageable.getOffset();
+	    	final int end = Math.min((start + pageable.getPageSize()), listaUsuarioDto.size());
+	    	final Page<UsuarioDto> pageUsuarioDto = new PageImpl<>(listaUsuarioDto.subList(start, end), pageable, listaUsuarioDto.size());
+	    	
+	    	return ResponseEntity.status(HttpStatus.OK).body(pageUsuarioDto);
 	    }
 	    
 	    @GetMapping("/{id}")
-	    public ResponseEntity<Object> getUsuario(@PathVariable(value = "id") UUID id){
-	        Optional<Usuario> usuarioOptional = usuarioService.findById(id);
+	    public ResponseEntity<Object> getUsuario(@PathVariable(value = "id") String id){
+	        Optional<Usuario> usuarioOptional = usuarioService.findById(UUID.fromString(id));
 	        if (!usuarioOptional.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
 	        }
@@ -71,12 +92,21 @@ public class UsuarioController {
 	        BeanUtils.copyProperties(usuarioDto, usuario);
 	        usuario.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
 	        
-	        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.save(usuario));
+	        Usuario usuarioSave = usuarioService.save(usuario);
+	        
+	        UsuarioDto usuarioDtoRetorno = new UsuarioDto();
+	        usuarioDtoRetorno.setId(usuarioSave.toString());
+	        usuarioDtoRetorno.setLogin(usuarioSave.getLogin());
+	        usuarioDtoRetorno.setSenha(usuarioSave.getSenha());
+	        usuarioDtoRetorno.setNome(usuarioSave.getNome());
+	        usuarioDtoRetorno.setListaItensDto(this.parseListaItemParaItemDto(usuarioSave.getListaItens()));
+	        
+	        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioDtoRetorno);
 	    }
 	    
 	    @DeleteMapping("/{id}")
-	    public ResponseEntity<Object> deleteUsuario(@PathVariable(value = "id") UUID id){
-	        Optional<Usuario> itemOptional = usuarioService.findById(id);
+	    public ResponseEntity<Object> deleteUsuario(@PathVariable(value = "id") String id){
+	        Optional<Usuario> itemOptional = usuarioService.findById(UUID.fromString(id));
 	        if (!itemOptional.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
 	        }
@@ -107,7 +137,16 @@ public class UsuarioController {
 	        	}
 			}
 	        
-	        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.save(usuario));
+	        Usuario usuarioSave = usuarioService.save(usuario);
+	        UsuarioDto usuarioDtoRetorno = new UsuarioDto();
+	        usuarioDtoRetorno.setId(usuarioSave.toString());
+	        usuarioDtoRetorno.setLogin(usuarioSave.getLogin());
+	        usuarioDtoRetorno.setSenha(usuarioSave.getSenha());
+	        usuarioDtoRetorno.setNome(usuarioSave.getNome());
+	        usuarioDtoRetorno.setListaItensDto(this.parseListaItemParaItemDto(usuarioSave.getListaItens()));
+	        
+	        
+	        return ResponseEntity.status(HttpStatus.OK).body(usuarioDtoRetorno);
 	    }
 	    
 	    @GetMapping("/{login}/{senha}")
@@ -132,7 +171,9 @@ public class UsuarioController {
 	    	
 	    	for (ItemDto itemDto : listaItemDto) {
 	    		Item item = new Item();
-	    		item.setId(UUID.fromString(itemDto.getId()));
+	    		if(itemDto.getId()!=null) {
+	    			item.setId(UUID.fromString(itemDto.getId()));	
+	    		}
 	    		item.setConteudo(itemDto.getConteudo());
 	    		item.setDataRegistro(LocalDateTime.now(ZoneId.of("UTC")));
 	    		
